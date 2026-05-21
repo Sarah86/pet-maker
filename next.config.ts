@@ -1,7 +1,30 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "files.cdn.printful.com",
+      },
+      {
+        protocol: "https",
+        hostname: "**.supabase.co",
+      },
+      {
+        protocol: "https",
+        hostname: "**.printful.com",
+      },
+      {
+        protocol: "https",
+        hostname: "*.s3-accelerate.amazonaws.com",
+      },
+      {
+        protocol: "https",
+        hostname: "*.s3.amazonaws.com",
+      },
+    ],
+  },
 };
 
 export default nextConfig;
