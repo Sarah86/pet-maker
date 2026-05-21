@@ -25,6 +25,8 @@ bun dev
 
 ## Code style
 
+- Prefer simplicity — solve problems in the most direct way possible; avoid over-engineering
+- Avoid adding external libraries when the same result can be achieved with plain TypeScript/React
 - Functional style + immutability; avoid mutation
 - Name every API call with a descriptive `async function` (not anonymous inline fetches)
 - Avoid unnecessary `!` non-null assertions; narrow types properly instead

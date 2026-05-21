@@ -10,14 +10,14 @@ import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Upload, ImageIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useDict } from "@/components/DictionaryProvider";
+import { getDictionary } from "@/lib/i18n";
 
 export default function UploadZone() {
+  const { uploadZone } = getDictionary();
   const [dragging, setDragging] = useState(false);
   const { upload, uploading, error, progress } = useUpload();
   const { previewUrl, selectedVariantId } = useDesignSession();
   const router = useRouter();
-  const { uploadZone } = useDict();
 
   const handleFiles = useCallback(
     async (files: FileList | null) => {

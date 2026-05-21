@@ -10,11 +10,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ArrowLeft, ShoppingCart, RefreshCw, Loader2 } from "lucide-react";
-import { useDict } from "@/components/DictionaryProvider";
+import { getDictionary } from "@/lib/i18n";
 
 export default function MockupViewer() {
+  const { mockupViewer } = getDictionary();
   const router = useRouter();
-  const { mockupViewer } = useDict();
   const {
     mockupUrl,
     selectedProductName,
@@ -128,7 +128,7 @@ export default function MockupViewer() {
       <div className="flex gap-3">
         <Button variant="outline" onClick={() => router.push("/upload")}>
           <ArrowLeft className="h-4 w-4 mr-2" />
-          Voltar
+          {mockupViewer.back}
         </Button>
         <Button
           className="flex-1"
@@ -138,12 +138,12 @@ export default function MockupViewer() {
           {checkoutLoading ? (
             <>
               <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              Redirecionando...
+              {mockupViewer.redirecting}
             </>
           ) : (
             <>
               <ShoppingCart className="h-4 w-4 mr-2" />
-              Finalizar compra
+              {mockupViewer.checkout}
             </>
           )}
         </Button>
