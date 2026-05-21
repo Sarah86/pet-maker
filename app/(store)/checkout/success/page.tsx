@@ -38,6 +38,22 @@ async function resolvePrintPlacement(
   return { placement, technique };
 }
 
+async function confirmPrintfulOrder(orderId: number): Promise<void> {
+  const maxAttempts = 8;
+  const delayMs = 2000;
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      await printful.post(`/v2/orders/${orderId}/confirmation`, {});
+      return;
+    } catch (err) {
+      const isCostPending =
+        err instanceof Error && err.message.includes("Cost calculations");
+      if (!isCostPending || attempt === maxAttempts) throw err;
+      await new Promise<void>((resolve) => setTimeout(resolve, delayMs));
+    }
+  }
+}
+
 async function fulfillCheckoutSession(
   sessionId: string
 ): Promise<string | null> {
@@ -130,7 +146,7 @@ async function fulfillCheckoutSession(
 
   if (orderError || !order) return t.errorSaveOrder;
 
-  await printful.post(`/v2/orders/${printfulOrderId}/confirmation`, {});
+  await confirmPrintfulOrder(printfulOrderId);
   await admin
     .from("orders")
     .update({ status: "in_production" })
