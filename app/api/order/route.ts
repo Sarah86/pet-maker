@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import { orderSchema } from "@/lib/validations/order";
-import { printful } from "@/lib/printful";
+import { printful } from "@/lib/printful/printful";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { errorMessage } from "@/lib/utils";
-import type { PrintfulOrder } from "@/lib/printful";
+import type { PrintfulOrder } from "@/lib/printful/printful";
 
 export async function POST(req: Request) {
   const supabase = await createClient();
@@ -36,26 +36,29 @@ export async function POST(req: Request) {
   } = parsed.data;
 
   try {
-    const created = await printful.post<{ result: PrintfulOrder }>("/v2/orders", {
-      recipient: {
-        name: recipientName,
-        email: recipientEmail,
-        address1,
-        address2: address2 ?? "",
-        city,
-        state_code: stateCode,
-        country_code: "BR",
-        zip,
-      },
-      items: [
-        {
-          variant_id: variantId,
-          quantity,
-          files: [{ type: "default", id: fileId }],
+    const created = await printful.post<{ result: PrintfulOrder }>(
+      "/v2/orders",
+      {
+        recipient: {
+          name: recipientName,
+          email: recipientEmail,
+          address1,
+          address2: address2 ?? "",
+          city,
+          state_code: stateCode,
+          country_code: "BR",
+          zip,
         },
-      ],
-      retail_costs: { currency: "BRL" },
-    });
+        items: [
+          {
+            variant_id: variantId,
+            quantity,
+            files: [{ type: "default", id: fileId }],
+          },
+        ],
+        retail_costs: { currency: "BRL" },
+      }
+    );
 
     const printfulOrderId = created.result.id;
     const admin = createAdminClient();
@@ -87,6 +90,9 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ orderId: order.id, printfulOrderId });
   } catch (err) {
-    return NextResponse.json({ error: errorMessage(err, "Erro ao criar pedido") }, { status: 500 });
+    return NextResponse.json(
+      { error: errorMessage(err, "Erro ao criar pedido") },
+      { status: 500 }
+    );
   }
 }

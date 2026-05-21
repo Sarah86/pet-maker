@@ -21,6 +21,21 @@ export function useOrder(userId: string | null) {
   const [orders, setOrders] = useState<Order[]>([]);
   const channelRef = useRef<ReturnType<ReturnType<typeof createClient>["channel"]> | null>(null);
 
+  const activeOrderKey = orders
+    .filter((o) => o.status !== "shipped" && o.status !== "delivered")
+    .map((o) => o.id)
+    .join(",");
+
+  useEffect(() => {
+    if (!activeOrderKey) return;
+    const ids = activeOrderKey.split(",");
+    const syncAll = () =>
+      ids.forEach((id) => fetch(`/api/order/${id}/sync`).catch(() => {}));
+    syncAll();
+    const timer = setInterval(syncAll, 30_000);
+    return () => clearInterval(timer);
+  }, [activeOrderKey]);
+
   useEffect(() => {
     if (!userId) return;
 

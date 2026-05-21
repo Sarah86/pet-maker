@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { stripe } from "@/lib/stripe";
-import { printful } from "@/lib/printful";
+import { printful } from "@/lib/printful/printful";
 import { createClient } from "@/lib/supabase/server";
 import { errorMessage } from "@/lib/utils";
 import { rateLimit, clientIp, tooManyRequests } from "@/lib/rate-limit";
@@ -14,13 +14,20 @@ const checkoutSchema = z.object({
 });
 
 const CHECKOUT_TTL_SECONDS = 30 * 60;
+const PRICE_MARKUP = 1; // e.g. 1.5 = 50% margin over Printful base cost
 
 async function getUnitAmount(variantId: number) {
   const priceData = await printful.get<{
-    result: Array<{ price: string; currency: string }>;
-  }>(`/v2/catalog-variants/${variantId}/prices?selling_region_name=brazil`);
-  if (!priceData.result[0]) return 0;
-  return Math.round(parseFloat(priceData.result[0].price) * 100);
+    data: {
+      currency: string;
+      variant: { techniques: Array<{ price: string; discounted_price: string }> };
+    };
+  }>(
+    `/v2/catalog-variants/${variantId}/prices?selling_region_name=brazil&currency=BRL`
+  );
+  const price = priceData.data?.variant?.techniques?.[0]?.discounted_price;
+  if (!price) return 0;
+  return Math.round(parseFloat(price) * PRICE_MARKUP * 100);
 }
 
 export async function POST(req: Request) {
@@ -41,18 +48,17 @@ export async function POST(req: Request) {
   if (!appUrl) throw new Error("NEXT_PUBLIC_APP_URL is not set");
 
   try {
-    const [{ data: { user } }, unitAmount] = await Promise.all([
-      supabase.auth.getUser(),
-      getUnitAmount(variantId),
-    ]);
+    const [
+      {
+        data: { user },
+      },
+      unitAmount,
+    ] = await Promise.all([supabase.auth.getUser(), getUnitAmount(variantId)]);
 
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
       currency: "brl",
-      payment_method_types: ["card", "boleto", "pix"],
-      payment_method_options: {
-        boleto: { expires_after_days: 3 },
-      },
+      payment_method_types: ["card", "pix"],
       line_items: [
         {
           quantity: 1,
@@ -85,6 +91,9 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ url: session.url });
   } catch (err) {
-    return NextResponse.json({ error: errorMessage(err, "Erro ao criar sessão") }, { status: 500 });
+    return NextResponse.json(
+      { error: errorMessage(err, "Erro ao criar sessão") },
+      { status: 500 }
+    );
   }
 }

@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import { uploadSchema } from "@/lib/validations/upload";
-import { printful } from "@/lib/printful";
+import { printful } from "@/lib/printful/printful";
 import { errorMessage } from "@/lib/utils";
 import { rateLimit, clientIp, tooManyRequests } from "@/lib/rate-limit";
-import type { PrintfulFile } from "@/lib/printful";
+import type { PrintfulFile } from "@/lib/printful/printful";
 
 export async function POST(req: Request) {
   if (!rateLimit(clientIp(req), 10, 60_000)) return tooManyRequests();
@@ -23,6 +23,9 @@ export async function POST(req: Request) {
     });
     return NextResponse.json(data);
   } catch (err) {
-    return NextResponse.json({ error: errorMessage(err, "Erro ao enviar arquivo") }, { status: 500 });
+    return NextResponse.json(
+      { error: errorMessage(err, "Erro ao enviar arquivo") },
+      { status: 500 }
+    );
   }
 }

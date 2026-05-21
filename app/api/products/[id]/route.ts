@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { printful } from "@/lib/printful";
+import { printful } from "@/lib/printful/printful";
 import { errorMessage } from "@/lib/utils";
-import type { PrintfulVariant } from "@/lib/printful";
+import type { PrintfulVariant } from "@/lib/printful/printful";
 
 interface V1ProductDetail {
   product: { id: number; title: string; image: string };
@@ -46,6 +46,9 @@ export async function GET(
       size: variant.size,
     });
   } catch (err) {
-    return NextResponse.json({ error: errorMessage(err, "Erro ao buscar variantes") }, { status: 500 });
+    return NextResponse.json(
+      { error: errorMessage(err, "Erro ao buscar variantes") },
+      { status: 500 }
+    );
   }
 }

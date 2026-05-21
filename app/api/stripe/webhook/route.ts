@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type Stripe from "stripe";
 import { stripe } from "@/lib/stripe";
-import { printful } from "@/lib/printful";
+import { printful } from "@/lib/printful/printful";
 import { createAdminClient } from "@/lib/supabase/server";
 import { errorMessage } from "@/lib/utils";
 
@@ -17,31 +17,37 @@ async function fulfillSession(session: Stripe.Checkout.Session) {
   const shipping = session.collected_information?.shipping_details;
   const customer = session.customer_details;
 
-  const created = await printful.post<{ result: { id: number } }>("/v2/orders", {
-    recipient: {
-      name: shipping?.name ?? customer?.name ?? "",
-      email: customer?.email ?? "",
-      address1: shipping?.address?.line1 ?? "",
-      address2: shipping?.address?.line2 ?? "",
-      city: shipping?.address?.city ?? "",
-      state_code: shipping?.address?.state ?? "",
-      country_code: shipping?.address?.country ?? "BR",
-      zip: shipping?.address?.postal_code ?? "",
-    },
-    items: [
-      {
-        variant_id: parseInt(variant_id),
-        quantity: 1,
-        files: [{ type: "default", url: printful_file_id }],
+  const created = await printful.post<{ data: { id: number } }>(
+    "/v2/orders",
+    {
+      recipient: {
+        name: shipping?.name ?? customer?.name ?? "",
+        email: customer?.email ?? "",
+        address1: shipping?.address?.line1 ?? "",
+        address2: shipping?.address?.line2 ?? "",
+        city: shipping?.address?.city ?? "",
+        state_code: shipping?.address?.state ?? "",
+        country_code: shipping?.address?.country ?? "BR",
+        zip: shipping?.address?.postal_code ?? "",
       },
-    ],
-    retail_costs: {
-      currency: "BRL",
-      total: String((session.amount_total ?? 0) / 100),
-    },
-  });
+      order_items: [
+        {
+          source: "catalog",
+          catalog_variant_id: parseInt(variant_id),
+          quantity: 1,
+          placements: [
+            {
+              placement: "front",
+              technique: "dtg",
+              layers: [{ type: "file", url: printful_file_id }],
+            },
+          ],
+        },
+      ],
+    }
+  );
 
-  const printfulOrderId = created.result.id;
+  const printfulOrderId = created.data.id;
   const admin = createAdminClient();
 
   const [{ data: order, error: orderError }] = await Promise.all([
@@ -66,7 +72,7 @@ async function fulfillSession(session: Stripe.Checkout.Session) {
       })
       .select()
       .single(),
-    printful.post(`/v2/orders/${printfulOrderId}/confirm`, {}),
+    printful.post(`/v2/orders/${printfulOrderId}/confirmation`, {}),
   ]);
 
   if (orderError || !order) throw new Error("Falha ao salvar pedido");
@@ -96,19 +102,17 @@ export async function POST(req: Request) {
   }
 
   try {
-    // Card / PIX: payment confirmed immediately
-    if (event.type === "checkout.session.completed") {
-      if (event.data.object.payment_status === "paid") {
-        await fulfillSession(event.data.object);
-      }
-    }
-
-    // Boleto: payment confirmed async (up to 3 days after checkout)
-    if (event.type === "checkout.session.async_payment_succeeded") {
+    if (
+      event.type === "checkout.session.completed" &&
+      event.data.object.payment_status === "paid"
+    ) {
       await fulfillSession(event.data.object);
     }
   } catch (err) {
-    return NextResponse.json({ error: errorMessage(err, "Fulfillment error") }, { status: 500 });
+    return NextResponse.json(
+      { error: errorMessage(err, "Fulfillment error") },
+      { status: 500 }
+    );
   }
 
   return NextResponse.json({ received: true });

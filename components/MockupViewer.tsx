@@ -138,8 +138,7 @@ export default function MockupViewer() {
         </Button>
         <Button
           className="flex-1"
-          disabled={true}
-          //disabled={!mockupUrl || loading || checkoutLoading}
+          disabled={!mockupUrl || loading || checkoutLoading}
           onClick={handleCheckout}
         >
           {checkoutLoading ? (

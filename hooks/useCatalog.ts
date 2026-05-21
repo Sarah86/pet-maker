@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { errorMessage } from "@/lib/utils";
-import type { PrintfulProduct } from "@/lib/printful";
+import type { PrintfulProduct } from "@/lib/printful/printful";
 
 const MUG_PRODUCT_NUMBER = 19;
 

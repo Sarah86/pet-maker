@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { printful } from "@/lib/printful";
+import { printful } from "@/lib/printful/printful";
 import { errorMessage, hasAllowedHostname } from "@/lib/utils";
 import { rateLimit, clientIp, tooManyRequests } from "@/lib/rate-limit";
-import type { MockupTask } from "@/lib/printful";
+import type { MockupTask } from "@/lib/printful/printful";
 
 export const maxDuration = 30;
 

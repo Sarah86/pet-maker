@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { printful } from "@/lib/printful";
+import { printful } from "@/lib/printful/printful";
 import { errorMessage } from "@/lib/utils";
-import type { PrintfulProduct } from "@/lib/printful";
+import type { PrintfulProduct } from "@/lib/printful/printful";
 
 export const revalidate = 600;
 
