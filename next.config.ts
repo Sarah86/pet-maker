@@ -17,11 +17,11 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
-        hostname: "*.s3-accelerate.amazonaws.com",
+        hostname: "**.s3-accelerate.amazonaws.com",
       },
       {
         protocol: "https",
-        hostname: "*.s3.amazonaws.com",
+        hostname: "**.s3.amazonaws.com",
       },
     ],
   },

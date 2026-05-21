@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { persist, createJSONStorage } from "zustand/middleware";
 
 interface DesignSession {
   previewUrl: string | null;
@@ -22,11 +23,27 @@ const initialState = {
   mockupUrl: null,
 };
 
-export const useDesignSession = create<DesignSession>((set) => ({
-  ...initialState,
-  setFile: (previewUrl, printfulFileUrl) => set({ previewUrl, printfulFileUrl }),
-  setVariant: (selectedProductId, selectedVariantId, selectedProductName) =>
-    set({ selectedProductId, selectedVariantId, selectedProductName }),
-  setMockup: (mockupUrl) => set({ mockupUrl }),
-  reset: () => set(initialState),
-}));
+export const useDesignSession = create<DesignSession>()(
+  persist(
+    (set) => ({
+      ...initialState,
+      setFile: (previewUrl, printfulFileUrl) => set({ previewUrl, printfulFileUrl }),
+      setVariant: (selectedProductId, selectedVariantId, selectedProductName) =>
+        set({ selectedProductId, selectedVariantId, selectedProductName }),
+      setMockup: (mockupUrl) => set({ mockupUrl }),
+      reset: () => set(initialState),
+    }),
+    {
+      name: "pet-maker-design-session",
+      storage: createJSONStorage(() => localStorage),
+      partialize: ({ previewUrl, printfulFileUrl, selectedProductId, selectedVariantId, selectedProductName, mockupUrl }) => ({
+        previewUrl,
+        printfulFileUrl,
+        selectedProductId,
+        selectedVariantId,
+        selectedProductName,
+        mockupUrl,
+      }),
+    }
+  )
+);
