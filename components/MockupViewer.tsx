@@ -56,7 +56,9 @@ export default function MockupViewer() {
 
       window.location.href = data.url;
     } catch (e) {
-      setCheckoutError(e instanceof Error ? e.message : mockupViewer.errorUnknown);
+      setCheckoutError(
+        e instanceof Error ? e.message : mockupViewer.errorUnknown
+      );
       setCheckoutLoading(false);
     }
   }
@@ -65,8 +67,12 @@ export default function MockupViewer() {
     return (
       <Card>
         <CardContent className="py-12 text-center">
-          <p className="text-muted-foreground mb-4">{mockupViewer.emptyState}</p>
-          <Button onClick={() => router.push("/upload")}>{mockupViewer.goToUpload}</Button>
+          <p className="text-muted-foreground mb-4">
+            {mockupViewer.emptyState}
+          </p>
+          <Button onClick={() => router.push("/upload")}>
+            {mockupViewer.goToUpload}
+          </Button>
         </CardContent>
       </Card>
     );
@@ -132,7 +138,8 @@ export default function MockupViewer() {
         </Button>
         <Button
           className="flex-1"
-          disabled={!mockupUrl || loading || checkoutLoading}
+          disabled={true}
+          //disabled={!mockupUrl || loading || checkoutLoading}
           onClick={handleCheckout}
         >
           {checkoutLoading ? (
