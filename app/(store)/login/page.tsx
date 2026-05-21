@@ -2,21 +2,21 @@
 
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { useRouter } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useDict } from "@/components/DictionaryProvider";
 
 export default function LoginPage() {
-  const router = useRouter();
+  const { pages: { login } } = useDict();
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setLoading(true);
     setError(null);
@@ -39,26 +39,22 @@ export default function LoginPage() {
     <div className="flex items-center justify-center min-h-screen px-4">
       <Card className="w-full max-w-sm">
         <CardHeader>
-          <CardTitle>Entrar</CardTitle>
-          <CardDescription>
-            Digite seu e-mail para receber um link de acesso.
-          </CardDescription>
+          <CardTitle>{login.title}</CardTitle>
+          <CardDescription>{login.description}</CardDescription>
         </CardHeader>
         <CardContent>
           {sent ? (
             <Alert>
-              <AlertDescription>
-                Link enviado! Verifique sua caixa de entrada.
-              </AlertDescription>
+              <AlertDescription>{login.sentMessage}</AlertDescription>
             </Alert>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="email">E-mail</Label>
+                <Label htmlFor="email">{login.emailLabel}</Label>
                 <Input
                   id="email"
                   type="email"
-                  placeholder="voce@exemplo.com"
+                  placeholder={login.emailPlaceholder}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
@@ -70,7 +66,7 @@ export default function LoginPage() {
                 </Alert>
               )}
               <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? "Enviando..." : "Enviar link de acesso"}
+                {loading ? login.submitting : login.submit}
               </Button>
             </form>
           )}

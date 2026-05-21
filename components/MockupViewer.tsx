@@ -10,9 +10,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ArrowLeft, ShoppingCart, RefreshCw, Loader2 } from "lucide-react";
+import { useDict } from "@/components/DictionaryProvider";
 
 export default function MockupViewer() {
   const router = useRouter();
+  const { mockupViewer } = useDict();
   const {
     mockupUrl,
     selectedProductName,
@@ -50,11 +52,11 @@ export default function MockupViewer() {
 
       const data = await res.json();
 
-      if (!res.ok) throw new Error(data.error ?? "Erro ao iniciar checkout");
+      if (!res.ok) throw new Error(data.error ?? mockupViewer.errorCheckout);
 
       window.location.href = data.url;
     } catch (e) {
-      setCheckoutError(e instanceof Error ? e.message : "Erro desconhecido");
+      setCheckoutError(e instanceof Error ? e.message : mockupViewer.errorUnknown);
       setCheckoutLoading(false);
     }
   }
@@ -63,10 +65,8 @@ export default function MockupViewer() {
     return (
       <Card>
         <CardContent className="py-12 text-center">
-          <p className="text-muted-foreground mb-4">
-            Envie uma imagem e selecione um produto para ver o mockup.
-          </p>
-          <Button onClick={() => router.push("/upload")}>Ir para upload</Button>
+          <p className="text-muted-foreground mb-4">{mockupViewer.emptyState}</p>
+          <Button onClick={() => router.push("/upload")}>{mockupViewer.goToUpload}</Button>
         </CardContent>
       </Card>
     );
@@ -80,7 +80,7 @@ export default function MockupViewer() {
             <div className="space-y-3">
               <Skeleton className="w-full aspect-square rounded-lg" />
               <p className="text-sm text-muted-foreground text-center animate-pulse">
-                Gerando mockup...
+                {mockupViewer.generating}
               </p>
             </div>
           )}
@@ -92,7 +92,7 @@ export default function MockupViewer() {
               </Alert>
               <Button variant="outline" onClick={() => generateMockup()}>
                 <RefreshCw className="h-4 w-4 mr-2" />
-                Tentar novamente
+                {mockupViewer.retry}
               </Button>
             </div>
           )}
@@ -102,7 +102,7 @@ export default function MockupViewer() {
               <div className="relative w-full aspect-square max-w-md mx-auto">
                 <Image
                   src={mockupUrl}
-                  alt="Mockup do produto"
+                  alt={mockupViewer.imageAlt}
                   fill
                   className="object-contain rounded-lg"
                   sizes="(max-width: 768px) 100vw, 448px"

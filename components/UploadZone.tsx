@@ -10,12 +10,14 @@ import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Upload, ImageIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useDict } from "@/components/DictionaryProvider";
 
 export default function UploadZone() {
   const [dragging, setDragging] = useState(false);
   const { upload, uploading, error, progress } = useUpload();
   const { previewUrl, selectedVariantId } = useDesignSession();
   const router = useRouter();
+  const { uploadZone } = useDict();
 
   const handleFiles = useCallback(
     async (files: FileList | null) => {
@@ -59,7 +61,7 @@ export default function UploadZone() {
           <div className="relative w-full aspect-square max-w-[180px]">
             <Image
               src={previewUrl}
-              alt="Design enviado"
+              alt={uploadZone.imageAlt}
               fill
               className="object-contain rounded-md"
               sizes="180px"
@@ -71,9 +73,9 @@ export default function UploadZone() {
               <ImageIcon className="h-5 w-5" />
             </div>
             <div>
-              <p className="text-sm font-medium text-foreground">Arraste sua imagem aqui</p>
-              <p className="text-xs">ou clique para selecionar</p>
-              <p className="text-xs mt-1">PNG, JPG, SVG · máx. 50 MB</p>
+              <p className="text-sm font-medium text-foreground">{uploadZone.dragHere}</p>
+              <p className="text-xs">{uploadZone.orClick}</p>
+              <p className="text-xs mt-1">{uploadZone.formats}</p>
             </div>
           </div>
         )}
@@ -87,7 +89,7 @@ export default function UploadZone() {
               style={{ width: `${progress}%` }}
             />
           </div>
-          <p className="text-xs text-muted-foreground text-center">Enviando... {progress}%</p>
+          <p className="text-xs text-muted-foreground text-center">{uploadZone.uploading} {progress}%</p>
         </div>
       )}
 
@@ -106,7 +108,7 @@ export default function UploadZone() {
           disabled={uploading}
         >
           <Upload className="h-4 w-4 mr-2" />
-          Trocar imagem
+          {uploadZone.changeImage}
         </Button>
       )}
     </div>

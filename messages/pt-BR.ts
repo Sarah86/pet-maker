@@ -1,0 +1,77 @@
+export const ptBR = {
+  nav: {
+    brand: "Pet Maker",
+    footer: "Pet Maker · Produzido por",
+    upload: "Criar produto",
+  },
+  pages: {
+    upload: {
+      title: "Envie sua arte",
+      subtitle:
+        "Faça upload da sua imagem e escolha em qual produto deseja estampar.",
+      stepImage: "1. Sua imagem",
+      stepProduct: "2. Escolha o produto",
+    },
+    mockup: {
+      title: "Pré-visualização",
+      subtitle: "Veja como sua arte ficará no produto antes de finalizar.",
+    },
+    login: {
+      title: "Entrar",
+      description: "Digite seu e-mail para receber um link de acesso.",
+      emailLabel: "E-mail",
+      emailPlaceholder: "voce@exemplo.com",
+      submitting: "Enviando...",
+      submit: "Enviar link de acesso",
+      sentMessage: "Link enviado! Verifique sua caixa de entrada.",
+    },
+  },
+  uploadZone: {
+    dragHere: "Arraste sua imagem aqui",
+    orClick: "ou clique para selecionar",
+    formats: "PNG, JPG, SVG · máx. 50 MB",
+    uploading: "Enviando...",
+    changeImage: "Trocar imagem",
+    imageAlt: "Design enviado",
+    errorFileType: "Apenas PNG, JPG e SVG são aceitos",
+    errorFileSize: "Arquivo muito grande (máx. 50 MB)",
+    errorSignedUrl: "Falha ao gerar URL do arquivo",
+    errorRegister: "Erro ao registrar arquivo no Printful",
+  },
+  productPicker: {
+    uploadFirst: "Envie uma imagem primeiro",
+    selectProduct: "Selecione um produto",
+    viewMockup: "Ver mockup",
+    errorCatalog: "Falha ao carregar catálogo",
+    errorVariant: "Erro ao buscar variante",
+  },
+  mockupViewer: {
+    emptyState: "Envie uma imagem e selecione um produto para ver o mockup.",
+    goToUpload: "Ir para upload",
+    generating: "Gerando mockup...",
+    retry: "Tentar novamente",
+    imageAlt: "Mockup do produto",
+    back: "Voltar",
+    redirecting: "Redirecionando...",
+    checkout: "Finalizar compra",
+    errorCheckout: "Erro ao iniciar checkout",
+    errorUnknown: "Erro desconhecido",
+    errorNeedImageAndProduct: "Selecione uma imagem e um produto primeiro",
+    errorGenerate: "Erro ao gerar mockup",
+    errorNoMockupImage: "Mockup não retornou imagem",
+  },
+  orderStatus: {
+    empty: "Você ainda não fez nenhum pedido.",
+    printfulOrder: "Pedido Printful:",
+    date: "Data:",
+    trackShipping: "Rastrear envio",
+    status: {
+      pending: "Aguardando",
+      in_production: "Em produção",
+      shipped: "Enviado",
+      delivered: "Entregue",
+    },
+  },
+} as const;
+
+export type Dictionary = typeof ptBR;
