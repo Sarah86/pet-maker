@@ -12,6 +12,7 @@ create table if not exists orders (
   id                  uuid primary key default gen_random_uuid(),
   user_id             uuid references auth.users,     -- nullable: guests can order
   printful_order_id   bigint unique,
+  stripe_session_id   text unique,
   design_id           uuid references designs,
   product_name        text,
   variant_id          bigint,

@@ -99,6 +99,13 @@ export const ptBR = {
     errorGenerate: "Erro ao gerar mockup",
     errorNoMockupImage: "Mockup não retornou imagem",
   },
+  checkoutSuccess: {
+    errorNotPaid: "Pagamento não confirmado. Tente novamente.",
+    errorMissingData: "Dados do pedido incompletos. Entre em contato com o suporte.",
+    errorSaveOrder: "Falha ao salvar pedido. Entre em contato com o suporte.",
+    errorUnknown: "Erro ao processar pedido.",
+    backToMockup: "Voltar ao mockup",
+  },
   orderStatus: {
     empty: "Você ainda não fez nenhum pedido.",
     printfulOrder: "Pedido Printful:",

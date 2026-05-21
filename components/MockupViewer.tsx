@@ -18,6 +18,7 @@ export default function MockupViewer() {
   const {
     mockupUrl,
     selectedProductName,
+    selectedProductId,
     selectedVariantId,
     printfulFileUrl,
     previewUrl,
@@ -33,7 +34,7 @@ export default function MockupViewer() {
   }, [previewUrl, generateMockup, mockupUrl, selectedVariantId]);
 
   async function handleCheckout() {
-    if (!printfulFileUrl || !selectedVariantId || !selectedProductName) return;
+    if (!printfulFileUrl || !selectedProductId || !selectedVariantId || !selectedProductName) return;
 
     setCheckoutLoading(true);
     setCheckoutError(null);
@@ -44,6 +45,7 @@ export default function MockupViewer() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           fileId: printfulFileUrl,
+          productId: selectedProductId,
           variantId: selectedVariantId,
           productName: selectedProductName,
           mockupUrl: mockupUrl ?? undefined,

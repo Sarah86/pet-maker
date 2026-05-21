@@ -8,6 +8,7 @@ import { rateLimit, clientIp, tooManyRequests } from "@/lib/rate-limit";
 
 const checkoutSchema = z.object({
   fileId: z.string().min(1),
+  productId: z.number().int().positive(),
   variantId: z.number().int().positive(),
   productName: z.string().min(1),
   mockupUrl: z.string().url().optional(),
@@ -20,7 +21,9 @@ async function getUnitAmount(variantId: number) {
   const priceData = await printful.get<{
     data: {
       currency: string;
-      variant: { techniques: Array<{ price: string; discounted_price: string }> };
+      variant: {
+        techniques: Array<{ price: string; discounted_price: string }>;
+      };
     };
   }>(
     `/v2/catalog-variants/${variantId}/prices?selling_region_name=brazil&currency=BRL`
@@ -42,7 +45,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Dados inválidos" }, { status: 400 });
   }
 
-  const { fileId, variantId, productName, mockupUrl } = parsed.data;
+  const { fileId, productId, variantId, productName, mockupUrl } = parsed.data;
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL;
   if (!appUrl) throw new Error("NEXT_PUBLIC_APP_URL is not set");
@@ -72,16 +75,23 @@ export async function POST(req: Request) {
           },
         },
       ],
-      // Collect shipping address — required to pass recipient to Printful
       shipping_address_collection: { allowed_countries: ["BR"] },
-      // Embed design reference so the webhook can create the Printful order
+      custom_fields: [
+        {
+          key: "tax_number",
+          label: { type: "custom", custom: "CPF / CNPJ" },
+          type: "text",
+          text: { minimum_length: 11, maximum_length: 18 },
+        },
+      ],
       metadata: {
         printful_file_id: fileId,
+        product_id: String(productId),
         variant_id: String(variantId),
         user_id: user?.id ?? "",
         product_name: productName,
       },
-      success_url: `${appUrl}/orders`,
+      success_url: `${appUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${appUrl}/mockup`,
       locale: "pt-BR",
       expires_at: Math.floor(Date.now() / 1000) + CHECKOUT_TTL_SECONDS,
