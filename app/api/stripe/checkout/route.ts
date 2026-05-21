@@ -4,6 +4,7 @@ import { stripe } from "@/lib/stripe";
 import { printful } from "@/lib/printful";
 import { createClient } from "@/lib/supabase/server";
 import { errorMessage } from "@/lib/utils";
+import { rateLimit, clientIp, tooManyRequests } from "@/lib/rate-limit";
 
 const checkoutSchema = z.object({
   fileId: z.string().min(1),
@@ -23,6 +24,8 @@ async function getUnitAmount(variantId: number) {
 }
 
 export async function POST(req: Request) {
+  if (!rateLimit(clientIp(req), 10, 60_000)) return tooManyRequests();
+
   const supabase = await createClient();
 
   const body = await req.json();

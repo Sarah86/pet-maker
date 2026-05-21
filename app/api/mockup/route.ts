@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { printful } from "@/lib/printful";
-import { errorMessage } from "@/lib/utils";
+import { errorMessage, hasAllowedHostname } from "@/lib/utils";
+import { rateLimit, clientIp, tooManyRequests } from "@/lib/rate-limit";
 import type { MockupTask } from "@/lib/printful";
 
 export const maxDuration = 30;
@@ -9,7 +10,17 @@ export const maxDuration = 30;
 const mockupSchema = z.object({
   productId: z.number().int().positive(),
   variantId: z.number().int().positive(),
-  imageUrl: z.string().url(),
+  imageUrl: z
+    .string()
+    .url()
+    .superRefine((val, ctx) => {
+      if (!hasAllowedHostname(val, ".printful.com", ".supabase.co")) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `imageUrl hostname not allowed: ${new URL(val).hostname}`,
+        });
+      }
+    }),
 });
 
 interface Printfile {
@@ -29,19 +40,25 @@ interface PrintfilesResult {
   }>;
 }
 
-async function pollMockupTask(taskKey: string, attempts = 10): Promise<MockupTask> {
+async function pollMockupTask(
+  taskKey: string,
+  attempts = 10
+): Promise<MockupTask> {
   for (let i = 0; i < attempts; i++) {
     const data = await printful.get<{ result: MockupTask }>(
       `/mockup-generator/task?task_key=${taskKey}`
     );
     if (data.result.status === "completed") return data.result;
-    if (data.result.status === "failed") throw new Error("Mockup generation failed");
+    if (data.result.status === "failed")
+      throw new Error("Mockup generation failed");
     await new Promise((r) => setTimeout(r, 2000));
   }
   throw new Error("Mockup task timed out");
 }
 
 export async function POST(req: Request) {
+  if (!rateLimit(clientIp(req), 5, 60_000)) return tooManyRequests();
+
   const body = await req.json();
   const parsed = mockupSchema.safeParse(body);
 
@@ -58,9 +75,14 @@ export async function POST(req: Request) {
 
     const placement = Object.keys(pf.available_placements)[0] ?? "default";
 
-    const variantPf = pf.variant_printfiles.find((v) => v.variant_id === variantId);
-    const printfileId = variantPf?.placements[placement] ?? pf.printfiles[0]?.printfile_id;
-    const printfile = pf.printfiles.find((p) => p.printfile_id === printfileId) ?? pf.printfiles[0];
+    const variantPf = pf.variant_printfiles.find(
+      (v) => v.variant_id === variantId
+    );
+    const printfileId =
+      variantPf?.placements[placement] ?? pf.printfiles[0]?.printfile_id;
+    const printfile =
+      pf.printfiles.find((p) => p.printfile_id === printfileId) ??
+      pf.printfiles[0];
 
     const position = printfile
       ? {
@@ -85,6 +107,9 @@ export async function POST(req: Request) {
     const completed = await pollMockupTask(task.result.task_key);
     return NextResponse.json({ result: completed });
   } catch (err) {
-    return NextResponse.json({ error: errorMessage(err, "Erro ao gerar mockup") }, { status: 500 });
+    return NextResponse.json(
+      { error: errorMessage(err, "Erro ao gerar mockup") },
+      { status: 500 }
+    );
   }
 }

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createHmac } from "crypto";
+import { createHmac, timingSafeEqual } from "crypto";
 import { z } from "zod";
 import { createAdminClient } from "@/lib/supabase/server";
 
@@ -16,6 +16,10 @@ const printfulEventSchema = z.object({
 
 export async function POST(req: Request) {
   const signature = req.headers.get("x-printful-signature");
+  if (!signature) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const body = await req.text();
 
   const webhookSecret = process.env.WEBHOOK_SECRET;
@@ -25,7 +29,9 @@ export async function POST(req: Request) {
     .update(body)
     .digest("hex");
 
-  if (signature !== expected) {
+  const sigBuf = Buffer.from(signature, "utf8");
+  const expBuf = Buffer.from(expected, "utf8");
+  if (sigBuf.length !== expBuf.length || !timingSafeEqual(sigBuf, expBuf)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

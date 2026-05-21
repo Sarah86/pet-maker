@@ -2,9 +2,12 @@ import { NextResponse } from "next/server";
 import { uploadSchema } from "@/lib/validations/upload";
 import { printful } from "@/lib/printful";
 import { errorMessage } from "@/lib/utils";
+import { rateLimit, clientIp, tooManyRequests } from "@/lib/rate-limit";
 import type { PrintfulFile } from "@/lib/printful";
 
 export async function POST(req: Request) {
+  if (!rateLimit(clientIp(req), 10, 60_000)) return tooManyRequests();
+
   const body = await req.json();
   const parsed = uploadSchema.safeParse(body);
 
