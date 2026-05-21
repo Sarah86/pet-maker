@@ -110,6 +110,7 @@ async function fulfillCheckoutSession(
       user_id: user_id || null,
       printful_order_id: printfulOrderId,
       stripe_session_id: sessionId,
+      stripe_payment_status: "paid",
       product_name: product_name ?? `Variante #${variant_id}`,
       variant_id: parseInt(variant_id),
       status: "pending",
@@ -130,7 +131,10 @@ async function fulfillCheckoutSession(
   if (orderError || !order) return t.errorSaveOrder;
 
   await printful.post(`/v2/orders/${printfulOrderId}/confirmation`, {});
-  // await admin.from("orders").update({ status: "in_production" }).eq("id", order.id);
+  await admin
+    .from("orders")
+    .update({ status: "in_production" })
+    .eq("id", order.id);
 
   return null;
 }

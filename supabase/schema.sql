@@ -13,10 +13,11 @@ create table if not exists orders (
   user_id             uuid references auth.users,     -- nullable: guests can order
   printful_order_id   bigint unique,
   stripe_session_id   text unique,
+  stripe_payment_status text default 'paid',           -- paid | refunded | partially_refunded | disputed
   design_id           uuid references designs,
   product_name        text,
   variant_id          bigint,
-  status              text default 'pending',         -- pending | in_production | shipped | delivered
+  status              text default 'pending',         -- pending | in_production | shipped | delivered | cancelled
   tracking_url        text,
   retail_price        numeric(10,2),
   currency            text default 'BRL',
