@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import Link from "next/link";
 import { getDictionary } from "@/lib/i18n";
 import { adminCreateUser } from "@/app/actions/auth";
 
@@ -27,7 +28,7 @@ export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const errorParam = searchParams.get("error");
-  const next = searchParams.get("next") ?? "/orders";
+  const next = searchParams.get("next") ?? "/upload";
 
   const [mode, setMode] = useState<Mode>("signin");
   const [email, setEmail] = useState("");
@@ -58,6 +59,7 @@ export default function LoginPage() {
         setSubmitError(error.message);
       } else {
         router.push(next);
+        router.refresh();
       }
     } else {
       const { error: createError } = await adminCreateUser(email, password);
@@ -75,6 +77,7 @@ export default function LoginPage() {
         setSubmitError(signInError.message);
       } else {
         router.push(next);
+        router.refresh();
       }
     }
   }
@@ -92,7 +95,9 @@ export default function LoginPage() {
     <div className="flex items-center justify-center min-h-screen px-4">
       <Card className="w-full max-w-sm">
         <CardHeader>
-          <CardTitle>{isSignIn ? login.titleSignIn : login.titleSignUp}</CardTitle>
+          <CardTitle>
+            {isSignIn ? login.titleSignIn : login.titleSignUp}
+          </CardTitle>
           <CardDescription>
             {isSignIn ? login.descriptionSignIn : login.descriptionSignUp}
           </CardDescription>
@@ -134,6 +139,16 @@ export default function LoginPage() {
                   ? login.submitSignIn
                   : login.submitSignUp}
             </Button>
+            {isSignIn && (
+              <div className="text-center">
+                <Link
+                  href="/forgot-password"
+                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {login.forgotPassword}
+                </Link>
+              </div>
+            )}
           </form>
         </CardContent>
         <CardFooter className="justify-center text-sm">
