@@ -9,7 +9,8 @@ export interface Order {
   printful_order_id: number;
   product_name: string;
   variant_id: number;
-  status: "pending" | "in_production" | "shipped" | "delivered";
+  status: "pending" | "in_production" | "shipped" | "delivered" | "cancelled";
+  stripe_payment_status: "paid" | "refunded" | "partially_refunded" | "disputed";
   tracking_url: string | null;
   currency: string;
   retail_price: string | null;
@@ -22,7 +23,12 @@ export function useOrder(userId: string | null) {
   const channelRef = useRef<ReturnType<ReturnType<typeof createClient>["channel"]> | null>(null);
 
   const activeOrderKey = orders
-    .filter((o) => o.status !== "shipped" && o.status !== "delivered")
+    .filter(
+      (o) =>
+        o.status !== "shipped" &&
+        o.status !== "delivered" &&
+        o.status !== "cancelled"
+    )
     .map((o) => o.id)
     .join(",");
 

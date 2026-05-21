@@ -6,12 +6,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { ExternalLink } from "lucide-react";
+import { ptBR } from "@/messages/pt-BR";
+
+const t = ptBR.orderStatus;
 
 const STATUS_LABEL: Record<Order["status"], string> = {
   pending: "Aguardando",
   in_production: "Em produção",
   shipped: "Enviado",
   delivered: "Entregue",
+  cancelled: "Cancelado",
 };
 
 const STATUS_VARIANT: Record<
@@ -22,6 +26,24 @@ const STATUS_VARIANT: Record<
   in_production: "outline",
   shipped: "default",
   delivered: "default",
+  cancelled: "destructive",
+};
+
+const PAYMENT_LABEL: Partial<Record<Order["stripe_payment_status"], string>> = {
+  refunded: t.paymentStatus.refunded,
+  partially_refunded: t.paymentStatus.partially_refunded,
+  disputed: t.paymentStatus.disputed,
+};
+
+const PAYMENT_VARIANT: Partial<
+  Record<
+    Order["stripe_payment_status"],
+    "default" | "secondary" | "outline" | "destructive"
+  >
+> = {
+  refunded: "destructive",
+  partially_refunded: "secondary",
+  disputed: "destructive",
 };
 
 interface Props {
@@ -40,7 +62,7 @@ export default function OrderStatus({ initialOrders, userId }: Props) {
     return (
       <Card>
         <CardContent className="py-12 text-center text-muted-foreground">
-          Você ainda não fez nenhum pedido.
+          {t.empty}
         </CardContent>
       </Card>
     );
@@ -55,19 +77,28 @@ export default function OrderStatus({ initialOrders, userId }: Props) {
               <CardTitle className="text-base font-medium">
                 {order.product_name}
               </CardTitle>
-              <Badge variant={STATUS_VARIANT[order.status]}>
-                {STATUS_LABEL[order.status]}
-              </Badge>
+              <div className="flex items-center gap-2">
+                <Badge variant={STATUS_VARIANT[order.status]}>
+                  {STATUS_LABEL[order.status]}
+                </Badge>
+                {order.stripe_payment_status !== "paid" && (
+                  <Badge variant={PAYMENT_VARIANT[order.stripe_payment_status]}>
+                    {PAYMENT_LABEL[order.stripe_payment_status]}
+                  </Badge>
+                )}
+              </div>
             </div>
           </CardHeader>
           <Separator />
           <CardContent className="pt-3 space-y-1.5 text-sm text-muted-foreground">
             <p>
-              Pedido Printful:{" "}
-              <span className="font-mono text-foreground">#{order.printful_order_id}</span>
+              {t.printfulOrder}{" "}
+              <span className="font-mono text-foreground">
+                #{order.printful_order_id}
+              </span>
             </p>
             <p>
-              Data:{" "}
+              {t.date}{" "}
               <span className="text-foreground">
                 {new Date(order.created_at).toLocaleDateString("pt-BR")}
               </span>
@@ -79,7 +110,7 @@ export default function OrderStatus({ initialOrders, userId }: Props) {
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1 text-primary hover:underline mt-1"
               >
-                Rastrear envio
+                {t.trackShipping}
                 <ExternalLink className="h-3 w-3" />
               </a>
             )}

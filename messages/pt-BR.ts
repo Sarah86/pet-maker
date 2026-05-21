@@ -117,6 +117,11 @@ export const ptBR = {
       shipped: "Enviado",
       delivered: "Entregue",
     },
+    paymentStatus: {
+      refunded: "Reembolsado",
+      partially_refunded: "Reembolso parcial",
+      disputed: "Contestação",
+    },
   },
 } as const;
 
