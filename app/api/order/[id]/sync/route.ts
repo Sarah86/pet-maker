@@ -58,22 +58,25 @@ export async function GET(
   const admin = createAdminClient();
 
   if (order.stripe_session_id) {
-    const session = await stripe.checkout.sessions.retrieve(
-      order.stripe_session_id,
-      { expand: ["payment_intent.latest_charge"] }
-    );
-    const pi = session.payment_intent;
-    if (typeof pi === "object" && pi !== null) {
-      const charge = pi.latest_charge;
-      if (typeof charge === "object" && charge !== null) {
-        const newPaymentStatus = resolvePaymentStatus(charge);
-        if (newPaymentStatus !== order.stripe_payment_status) {
-          await admin
-            .from("orders")
-            .update({ stripe_payment_status: newPaymentStatus })
-            .eq("id", order.id);
+    try {
+      const session = await stripe.checkout.sessions.retrieve(
+        order.stripe_session_id,
+        { expand: ["payment_intent.latest_charge"] }
+      );
+      const pi = session.payment_intent;
+      if (typeof pi === "object" && pi !== null) {
+        const charge = pi.latest_charge;
+        if (typeof charge === "object" && charge !== null) {
+          const newPaymentStatus = resolvePaymentStatus(charge);
+          if (newPaymentStatus !== order.stripe_payment_status) {
+            await admin
+              .from("orders")
+              .update({ stripe_payment_status: newPaymentStatus })
+              .eq("id", order.id);
+          }
         }
       }
+    } catch {
     }
   }
 
