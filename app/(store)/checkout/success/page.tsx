@@ -38,6 +38,14 @@ async function resolvePrintPlacement(
   return { placement, technique };
 }
 
+function isCostPendingError(err: unknown): boolean {
+  return err instanceof Error && err.message.includes("Cost calculations");
+}
+
+async function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 async function confirmPrintfulOrder(orderId: number): Promise<void> {
   const maxAttempts = 8;
   const delayMs = 2000;
@@ -46,10 +54,8 @@ async function confirmPrintfulOrder(orderId: number): Promise<void> {
       await printful.post(`/v2/orders/${orderId}/confirmation`, {});
       return;
     } catch (err) {
-      const isCostPending =
-        err instanceof Error && err.message.includes("Cost calculations");
-      if (!isCostPending || attempt === maxAttempts) throw err;
-      await new Promise<void>((resolve) => setTimeout(resolve, delayMs));
+      if (!isCostPendingError(err) || attempt === maxAttempts) throw err;
+      await sleep(delayMs);
     }
   }
 }
@@ -90,6 +96,8 @@ async function fulfillCheckoutSession(
     variant_id
   );
 
+  const variantIdNumber = parseInt(variant_id, 10);
+
   const created = await printful.post<{ data: { id: number } }>("/v2/orders", {
     recipient: {
       name: shipping?.name ?? customer?.name ?? "",
@@ -105,7 +113,7 @@ async function fulfillCheckoutSession(
     order_items: [
       {
         source: "catalog",
-        catalog_variant_id: parseInt(variant_id),
+        catalog_variant_id: variantIdNumber,
         quantity: 1,
         placements: [
           {
@@ -128,7 +136,7 @@ async function fulfillCheckoutSession(
       stripe_session_id: sessionId,
       stripe_payment_status: "paid",
       product_name: product_name ?? `Variante #${variant_id}`,
-      variant_id: parseInt(variant_id),
+      variant_id: variantIdNumber,
       status: "pending",
       currency: "BRL",
       retail_price: (session.amount_total ?? 0) / 100,
@@ -164,12 +172,9 @@ export default async function CheckoutSuccessPage({
 
   if (!session_id) redirect("/mockup");
 
-  let fulfillmentError: string | null = null;
-  try {
-    fulfillmentError = await fulfillCheckoutSession(session_id);
-  } catch (err) {
-    fulfillmentError = errorMessage(err, t.errorUnknown);
-  }
+  const fulfillmentError = await fulfillCheckoutSession(session_id).catch(
+    (err) => errorMessage(err, t.errorUnknown)
+  );
 
   if (!fulfillmentError) redirect("/orders");
 
