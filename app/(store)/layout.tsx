@@ -29,6 +29,9 @@ export default async function StoreLayout({
                 <Link href="/upload" className="hover:text-foreground transition-colors">
                   {nav.upload}
                 </Link>
+                <Link href="/cat-builder" className="hover:text-foreground transition-colors">
+                  {nav.catBuilder}
+                </Link>
                 <Link href="/orders" className="hover:text-foreground transition-colors">
                   {nav.orders}
                 </Link>

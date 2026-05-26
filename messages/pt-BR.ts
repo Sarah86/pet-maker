@@ -3,6 +3,7 @@ export const ptBR = {
     brand: "Pet Maker",
     footer: "Pet Maker · Produzido por",
     upload: "Criar produto",
+    catBuilder: "Montar gato",
     orders: "Meus pedidos",
     signIn: "Entrar",
     signOut: "Sair",
@@ -121,6 +122,20 @@ export const ptBR = {
       refunded: "Reembolsado",
       partially_refunded: "Reembolso parcial",
       disputed: "Contestação",
+    },
+  },
+  catBuilder: {
+    title: "Montar meu gato",
+    download: "Baixar",
+    useDesign: "Usar este design",
+    uploading: "Enviando...",
+    errorUpload: "Falha ao enviar design. Tente novamente.",
+    canvasAlt: "Pré-visualização do gato",
+    categories: {
+      body: "Corpo",
+      eyes: "Olhos",
+      nose: "Nariz",
+      tail: "Rabo",
     },
   },
 } as const;
