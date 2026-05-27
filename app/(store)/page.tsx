@@ -1,5 +1,5 @@
-import UploadPage from "./upload/page";
+import CatBuilderPage from "./cat-builder/page";
 
 export default function HomePage() {
-  return <UploadPage />;
+  return <CatBuilderPage />;
 }

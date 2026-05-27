@@ -12,11 +12,11 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export default function ProductPicker() {
+export default function ProductPicker({ showContinue = true }: { showContinue?: boolean }) {
   const { products, loading, error } = useCatalog();
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [fetchingVariant, setFetchingVariant] = useState(false);
-  const { previewUrl, setVariant } = useDesignSession();
+  const { previewUrl, setVariant, clearVariant } = useDesignSession();
   const router = useRouter();
 
   async function handleSelect(productId: number, productTitle: string) {
@@ -29,6 +29,7 @@ export default function ProductPicker() {
       setVariant(productId, data.variantId, productTitle);
     } catch {
       setSelectedId(null);
+      clearVariant();
     } finally {
       setFetchingVariant(false);
     }
@@ -93,17 +94,19 @@ export default function ProductPicker() {
             ))}
       </div>
 
-      <Button
-        className="w-full"
-        disabled={!selectedId || !previewUrl || fetchingVariant}
-        onClick={handleContinue}
-      >
-        {!previewUrl
-          ? "Envie uma imagem primeiro"
-          : !selectedId
-            ? "Selecione um produto"
-            : "Ver mockup"}
-      </Button>
+      {showContinue && (
+        <Button
+          className="w-full"
+          disabled={!selectedId || !previewUrl || fetchingVariant}
+          onClick={handleContinue}
+        >
+          {!previewUrl
+            ? "Envie uma imagem primeiro"
+            : !selectedId
+              ? "Selecione um produto"
+              : "Ver mockup"}
+        </Button>
+      )}
     </div>
   );
 }

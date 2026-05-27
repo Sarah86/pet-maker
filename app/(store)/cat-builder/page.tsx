@@ -1,14 +1,16 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getDictionary } from "@/lib/i18n";
 import { useUpload } from "@/hooks/useUpload";
+import { useDesignSession } from "@/store/useDesignSession";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2, Download } from "lucide-react";
 import { PartSelector } from "@/components/CatBuilder/PartSelector";
 import { CatCanvas, type CatCanvasHandle } from "@/components/CatBuilder/CatCanvas";
+import ProductPicker from "@/components/ProductPicker";
 
 type Variant = 1 | 2 | 3 | 4 | 5;
 
@@ -27,8 +29,13 @@ export default function CatBuilderPage() {
   const { catBuilder } = getDictionary();
   const router = useRouter();
   const { upload, uploading, error } = useUpload();
+  const { selectedVariantId, clearVariant } = useDesignSession();
   const canvasRef = useRef<CatCanvasHandle>(null);
   const [selections, setSelections] = useState<Selections>(DEFAULT_SELECTIONS);
+
+  useEffect(() => {
+    clearVariant();
+  }, [clearVariant]);
 
   function selectPart(category: keyof Selections, variant: Variant) {
     setSelections((prev) => ({ ...prev, [category]: variant }));
@@ -100,6 +107,13 @@ export default function CatBuilderPage() {
         </div>
       </div>
 
+      <div>
+        <h2 className="text-sm font-medium mb-3 text-muted-foreground uppercase tracking-wide">
+          {catBuilder.stepProduct}
+        </h2>
+        <ProductPicker showContinue={false} />
+      </div>
+
       {error && (
         <Alert variant="destructive">
           <AlertDescription>{catBuilder.errorUpload}</AlertDescription>
@@ -111,14 +125,14 @@ export default function CatBuilderPage() {
           <Download className="h-4 w-4 mr-2" />
           {catBuilder.download}
         </Button>
-        <Button className="flex-1" onClick={handleUseDesign} disabled={uploading}>
+        <Button className="flex-1" onClick={handleUseDesign} disabled={uploading || !selectedVariantId}>
           {uploading ? (
             <>
               <Loader2 className="h-4 w-4 mr-2 animate-spin" />
               {catBuilder.uploading}
             </>
           ) : (
-            catBuilder.useDesign
+            catBuilder.finish
           )}
         </Button>
       </div>

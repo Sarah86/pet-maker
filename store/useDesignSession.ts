@@ -11,6 +11,7 @@ interface DesignSession {
   setFile: (previewUrl: string, printfulFileUrl: string) => void;
   setVariant: (productId: number, variantId: number, productName: string) => void;
   setMockup: (mockupUrl: string) => void;
+  clearVariant: () => void;
   reset: () => void;
 }
 
@@ -27,10 +28,11 @@ export const useDesignSession = create<DesignSession>()(
   persist(
     (set) => ({
       ...initialState,
-      setFile: (previewUrl, printfulFileUrl) => set({ previewUrl, printfulFileUrl }),
+      setFile: (previewUrl, printfulFileUrl) => set({ previewUrl, printfulFileUrl, mockupUrl: null }),
       setVariant: (selectedProductId, selectedVariantId, selectedProductName) =>
         set({ selectedProductId, selectedVariantId, selectedProductName }),
       setMockup: (mockupUrl) => set({ mockupUrl }),
+      clearVariant: () => set({ selectedProductId: null, selectedVariantId: null, selectedProductName: null }),
       reset: () => set(initialState),
     }),
     {

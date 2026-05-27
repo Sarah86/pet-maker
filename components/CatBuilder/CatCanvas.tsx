@@ -21,7 +21,20 @@ interface CatCanvasProps {
 }
 
 const CANVAS_SIZE = 512;
-const LAYER_ORDER: Array<keyof Selections> = ["tail", "body", "nose", "eyes"];
+const LAYER_ORDER: Array<keyof Selections> = ["tail", "body", "eyes", "nose"];
+
+interface LayerConfig {
+  scale: number;
+  dx: number;
+  dy: number;
+}
+
+const LAYER_CONFIG: Record<keyof Selections, LayerConfig> = {
+  body: { scale: 1.0, dx: 0, dy: 0 },
+  tail: { scale: 0.7, dx: 140, dy: 70 },
+  eyes: { scale: 0.65, dx: 0, dy: -60 },
+  nose: { scale: 0.4, dx: 0, dy: -10 },
+};
 
 function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
@@ -34,13 +47,20 @@ function loadImage(src: string): Promise<HTMLImageElement> {
 
 async function drawLayers(
   ctx: CanvasRenderingContext2D,
-  selections: Selections
+  selections: Selections,
+  isCancelled: () => boolean
 ): Promise<void> {
   ctx.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
   for (const layer of LAYER_ORDER) {
+    if (isCancelled()) return;
     const src = `/cat-parts/${layer}/${layer}_${selections[layer]}.png`;
     const img = await loadImage(src);
-    ctx.drawImage(img, 0, 0, CANVAS_SIZE, CANVAS_SIZE);
+    if (isCancelled()) return;
+    const { scale, dx, dy } = LAYER_CONFIG[layer];
+    const size = Math.round(CANVAS_SIZE * scale);
+    const x = Math.round((CANVAS_SIZE - size) / 2 + dx);
+    const y = Math.round((CANVAS_SIZE - size) / 2 + dy);
+    ctx.drawImage(img, x, y, size, size);
   }
 }
 
@@ -72,7 +92,9 @@ export const CatCanvas = forwardRef<CatCanvasHandle, CatCanvasProps>(
       if (!canvas) return;
       const ctx = canvas.getContext("2d");
       if (!ctx) return;
-      drawLayers(ctx, selections);
+      let cancelled = false;
+      drawLayers(ctx, selections, () => cancelled).catch(() => {});
+      return () => { cancelled = true; };
     }, [selections]);
 
     return (

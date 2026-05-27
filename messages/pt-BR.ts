@@ -86,8 +86,8 @@ export const ptBR = {
     errorVariant: "Erro ao buscar variante",
   },
   mockupViewer: {
-    emptyState: "Envie uma imagem e selecione um produto para ver o mockup.",
-    goToUpload: "Ir para upload",
+    emptyState: "Monte seu gato e selecione um produto para ver o mockup.",
+    goToUpload: "Montar gato",
     generating: "Gerando mockup...",
     retry: "Tentar novamente",
     imageAlt: "Mockup do produto",
@@ -127,10 +127,11 @@ export const ptBR = {
   catBuilder: {
     title: "Montar meu gato",
     download: "Baixar",
-    useDesign: "Usar este design",
+    finish: "Finalizar",
     uploading: "Enviando...",
     errorUpload: "Falha ao enviar design. Tente novamente.",
     canvasAlt: "Pré-visualização do gato",
+    stepProduct: "Escolha o produto",
     categories: {
       body: "Corpo",
       eyes: "Olhos",

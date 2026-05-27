@@ -73,7 +73,12 @@ export async function POST(req: Request) {
       `/mockup-generator/printfiles/${productId}`
     );
 
-    const placement = Object.keys(pf.available_placements)[0] ?? "default";
+    const allPlacements = Object.keys(pf.available_placements);
+    const placement =
+      allPlacements.find((p) => p === "front") ??
+      allPlacements.find((p) => p === "default") ??
+      allPlacements[0] ??
+      "default";
 
     const variantPf = pf.variant_printfiles.find(
       (v) => v.variant_id === variantId
@@ -85,14 +90,20 @@ export async function POST(req: Request) {
       pf.printfiles[0];
 
     const position = printfile
-      ? {
-          area_width: printfile.width,
-          area_height: printfile.height,
-          width: printfile.width,
-          height: printfile.height,
-          top: 0,
-          left: 0,
-        }
+      ? (() => {
+          const size = Math.min(printfile.width, printfile.height);
+          const rawLeft = printfile.width > printfile.height * 1.5
+            ? Math.round(printfile.width * 0.75 - size / 2)
+            : Math.round((printfile.width - size) / 2);
+          return {
+            area_width: printfile.width,
+            area_height: printfile.height,
+            width: size,
+            height: size,
+            top: Math.round((printfile.height - size) / 2),
+            left: Math.min(rawLeft, printfile.width - size),
+          };
+        })()
       : undefined;
 
     const task = await printful.post<{ result: MockupTask }>(

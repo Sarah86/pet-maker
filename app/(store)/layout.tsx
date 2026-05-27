@@ -26,9 +26,6 @@ export default async function StoreLayout({
           <nav className="flex items-center gap-4 text-sm text-muted-foreground">
             {user ? (
               <>
-                <Link href="/upload" className="hover:text-foreground transition-colors">
-                  {nav.upload}
-                </Link>
                 <Link href="/cat-builder" className="hover:text-foreground transition-colors">
                   {nav.catBuilder}
                 </Link>

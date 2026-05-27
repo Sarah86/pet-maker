@@ -72,7 +72,7 @@ export default function MockupViewer() {
           <p className="text-muted-foreground mb-4">
             {mockupViewer.emptyState}
           </p>
-          <Button onClick={() => router.push("/upload")}>
+          <Button onClick={() => router.push("/cat-builder")}>
             {mockupViewer.goToUpload}
           </Button>
         </CardContent>
@@ -134,7 +134,7 @@ export default function MockupViewer() {
       )}
 
       <div className="flex gap-3">
-        <Button variant="outline" onClick={() => router.push("/upload")}>
+        <Button variant="outline" onClick={() => router.push("/cat-builder")}>
           <ArrowLeft className="h-4 w-4 mr-2" />
           {mockupViewer.back}
         </Button>
